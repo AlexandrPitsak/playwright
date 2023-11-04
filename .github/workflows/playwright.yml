@@ -4,8 +4,10 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, setup-ci-cd, master]
+
 jobs:
-  test:
+  playwright-test:
+    name: "Playwright Tests - Shard ${{ matrix.shard }}"
     timeout-minutes: 60
     runs-on: ubuntu-latest
     strategy:
@@ -18,47 +20,66 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - name: Install dependencies
-        run: npm ci
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-      - name: Run Playwright tests
-        run: npx playwright test --shard ${{ matrix.shard }}
+
+      - name: Build Docker image > playwrightCI
+        run: docker build . --file Dockerfile -t playwrightCI
+
+      - name: Run docker container
+        run: docker run --it --rm -d --name dockercontainer playwrightCI /bin/bash
+
+      - name: Copy test results
+        run: docker cp dockercontainer:./tests/playwright-report playwright-report
+
       - uses: actions/upload-artifact@v3
-        if: always()
         with:
           name: playwright-report
-          path: playwright-report/
-          retention-days: 30
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: blob-report
-          path: blob-report/
-          retention-days: 30
-
-  merge-reports:
-    if: always()
-    needs: [test]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-      - name: Install dependencies
-        run: npm ci
-      - name: Download blob reports
-        uses: actions/download-artifact@v3
-        with:
-          name: blob-report
-          path: blob-report/
-
-      - name: Merge into HTML report
-        run: npx playwright merge-reports --reporter html ./blob-report
-
-      - name: Upload HTML reporter
-        uses: actions/upload-artifact@v3
-        with:
-          name: merged-html-report-${{ github.run_attempt}}
           path: playwright-report
+
+      # - name: Install dependencies
+      #   run: npm ci
+
+      # - name: Install Playwright Browsers
+      #   run: npx playwright install --with-deps
+
+      # - name: Run Playwright tests
+      #   run: npx playwright test --shard ${{ matrix.shard }}
+
+      # - uses: actions/upload-artifact@v3
+      #   if: always()
+      #   with:
+      #     name: playwright-report
+      #     path: playwright-report/
+      #     retention-days: 30
+
+      # - uses: actions/upload-artifact@v3
+      #   if: always()
+      #   with:
+      #     name: blob-report
+      #     path: blob-report/
+      #     retention-days: 30
+
+  # merge-reports:
+  #   if: always()
+  #   needs: [playwright-test]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+  #     - name: Install dependencies
+  #       run: npm ci
+  #     - name: Download blob reports
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: blob-report
+  #         path: blob-report/
+
+  #     - name: Merge into HTML report
+  #       run: npx playwright merge-reports --reporter html ./blob-report
+
+  #     - name: Upload HTML reporter
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: merged-html-report-${{ github.run_attempt}}
+  #         path: playwright-report
