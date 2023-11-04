@@ -21,11 +21,11 @@ jobs:
         with:
           node-version: 18
 
-      - name: Build Docker image > playwrightCI
-        run: docker build . --file Dockerfile -t playwrightCI
+      - name: Build Docker image
+        run: docker build . --file Dockerfile -t playwrightci
 
       - name: Run docker container
-        run: docker run --it --rm -d --name dockercontainer playwrightCI /bin/bash
+        run: docker run --it --rm -d --name dockercontainer playwrightci /bin/bash
 
       - name: Copy test results
         run: docker cp dockercontainer:./tests/playwright-report playwright-report
