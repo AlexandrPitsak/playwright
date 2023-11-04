@@ -3,7 +3,7 @@ on:
   push:
     branches: [main, master]
   pull_request:
-    branches: [main, master]
+    branches: [main, setup-ci-cd, master]
 jobs:
   test:
     timeout-minutes: 60
@@ -20,8 +20,8 @@ jobs:
           node-version: 18
       - name: Install dependencies
         run: npm ci
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+      # - name: Install Playwright Browsers
+      #   run: npx playwright install --with-deps
       - name: Run Playwright tests
         run: npx playwright test --shard ${{ matrix.shard }}
       - uses: actions/upload-artifact@v3
@@ -60,5 +60,5 @@ jobs:
       - name: Upload HTML reporter
         uses: actions/upload-artifact@v3
         with:
-          name: html-report-attempt-${{ github.run_attempt}}
+          name: merged-html-report-${{ github.run_attempt}}
           path: playwright-report
