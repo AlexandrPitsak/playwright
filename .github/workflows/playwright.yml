@@ -25,7 +25,7 @@ jobs:
         run: docker build . --file Dockerfile -t playwrightci
 
       - name: Run docker container
-        run: docker run --it --rm -d --name dockercontainer playwrightci /bin/bash
+        run: docker run --it --rm -d -e ${{matrix.shard}} --name dockercontainer playwrightci /bin/bash
 
       - name: Copy test results
         run: docker cp dockercontainer:./tests/playwright-report playwright-report
