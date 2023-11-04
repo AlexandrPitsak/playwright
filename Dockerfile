@@ -4,6 +4,8 @@ COPY . /tests
 WORKDIR /tests
 
 ARG shard
+ENV shard=$shard
+
 
 RUN npm install
 RUN npx @playwright/test install
