@@ -21,11 +21,15 @@ jobs:
         with:
           node-version: 18
 
-      - name: Build Docker image
-        run: docker build . --build-arg shard="${{matrix.shard}}" --file Dockerfile -t playwrightci
+      - name: Container Cleanup
+        continue-on-error: true
+        run: docker rm playwright_test --force
 
-      # - name: Run docker container
-      #   run: docker run --it --rm -d --name dockercontainer playwrightci /bin/bash
+      - name: Build Docker image
+        run: docker build --file Dockerfile -t playwright_image
+
+      - name: Run docker container
+        run: docker run --rm -i --entrypoint="npx" --name playwright_test playwright_image playwright test --shard ${{matrix.shard}}
 
       - name: Copy test results
         run: docker cp dockercontainer:./tests/playwright-report playwright-report

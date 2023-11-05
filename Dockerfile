@@ -10,5 +10,4 @@ ENV shard=$shard
 RUN npm install
 RUN npx @playwright/test install
 RUN npx playwright install-deps
-RUN npx playwright test --shard $shard
 
