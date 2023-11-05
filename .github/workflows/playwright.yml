@@ -50,29 +50,29 @@ jobs:
           path: blob-report
           retention-days: 30
 
-  # merge-reports:
-  #   if: always()
-  #   needs: [playwright-test]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 18
-  #     - name: Install dependencies
-  #       run: npm ci
+  merge-reports:
+    if: always()
+    needs: [playwright-test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm ci
 
-  #     - name: Download blob reports
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: blob-report
-  #         path: blob-report
+      - name: Download blob reports
+        uses: actions/download-artifact@v3
+        with:
+          name: blob-report
+          path: blob-report
 
-  #     - name: Merge into HTML report
-  #       run: npx playwright merge-reports --reporter html ./blob-report
+      - name: Merge into HTML report
+        run: npx playwright merge-reports --reporter html ./blob-report
 
-  #     - name: Upload HTML reporter
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: merged-html-report-${{ github.run_attempt}}
-  #         path: playwright-report
+      - name: Upload HTML reporter
+        uses: actions/upload-artifact@v3
+        with:
+          name: merged-html-report-${{ github.run_attempt}}
+          path: playwright-report
