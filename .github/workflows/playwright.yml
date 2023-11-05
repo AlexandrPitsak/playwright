@@ -32,7 +32,7 @@ jobs:
         run: docker run --rm -i --entrypoint="npx" --name playwright_test playwright_image playwright test --shard ${{matrix.shard}}
 
       - name: Copy test results
-        run: docker cp dockercontainer:./tests/playwright-report playwright-report
+        run: docker cp playwright_test:./tests/playwright-report playwright-report
 
       - uses: actions/upload-artifact@v3
         with:
