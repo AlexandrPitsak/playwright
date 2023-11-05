@@ -44,7 +44,7 @@ jobs:
         if: always()
         with:
           name: blob-report
-          path: blob-report/
+          path: blob-report
           retention-days: 30
 
   merge-reports:
@@ -62,7 +62,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: blob-report
-          path: blob-report/
+          path: blob-report
 
       - name: Merge into HTML report
         run: npx playwright merge-reports --reporter html ./blob-report
