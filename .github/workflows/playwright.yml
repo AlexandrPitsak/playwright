@@ -35,7 +35,7 @@ jobs:
         run: docker cp playwright_test:./tests/playwright-report playwright-report
 
       - name: Copy test results playwright-blob
-        run: docker cp playwright_test:./tests/blob-report playwright-blob
+        run: docker cp playwright_test:./tests/blob-report blob-report
 
       - uses: actions/upload-artifact@v3
         if: always()
