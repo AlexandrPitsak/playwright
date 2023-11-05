@@ -27,9 +27,9 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t playwright_image --file Dockerfile .
-
+      # Not to delete container before copy result
       - name: Run docker container
-        run: docker run --rm -i --entrypoint="npx" --name playwright_test playwright_image playwright test --shard ${{matrix.shard}}
+        run: docker run -i --entrypoint="npx" --name playwright_test playwright_image playwright test --shard ${{matrix.shard}}
 
       - name: Copy test results
         run: docker cp playwright_test:./tests/playwright-report playwright-report
