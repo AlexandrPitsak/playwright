@@ -64,6 +64,9 @@ jobs:
           name: blob-report
           path: blob-report
 
+      - name: TEST PATH
+        run: ls -a
+
       - name: Merge into HTML report
         run: npx playwright merge-reports --reporter html ./blob-report
 
