@@ -8,7 +8,7 @@ on:
 jobs:
   playwright-test:
     name: "Playwright Tests - Shard ${{ matrix.shard }}"
-    timeout-minutes: 60
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -20,20 +20,22 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-
+      # Remove container
       - name: Container Cleanup
         continue-on-error: true
         run: docker rm playwright_test --force
-
+      # Build docker container (-t tag) from file (--file / -f)
       - name: Build Docker image
         run: docker build -t playwright_image --file Dockerfile .
-
+      # Run container with interactive mode (-i) with name (--name)
+      # entrypoint (command which will run after runing container --entrypoint)
+      # commanfor tagged container and command to run
       - name: Run docker container
         run: docker run -i --name playwright_test --entrypoint="npx" playwright_image playwright test --shard ${{matrix.shard}}
-
+      # Copy playwright-report
       - name: Copy test results playwright-report
         run: docker cp playwright_test:./tests/playwright-report playwright-report
-
+      # Copy blob-report
       - name: Copy test results playwright-blob
         run: docker cp playwright_test:./tests/blob-report blob-report
 
@@ -49,6 +51,10 @@ jobs:
           name: blob-report
           path: blob-report
           retention-days: 30
+      # Remove container
+      - name: Container Cleanup
+        continue-on-error: true
+        run: docker rm playwright_test --force
 
   merge-reports:
     if: always()
