@@ -3,7 +3,7 @@ on:
   push:
     branches: [main, master]
   pull_request:
-    branches: [main, setup-ci-cd, master]
+    branches: [main, improvements, master]
 
 jobs:
   playwright-test:
