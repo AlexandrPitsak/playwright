@@ -30,7 +30,7 @@ jobs:
       # Run container with interactive mode (-i) with name (--name)
       # entrypoint (command which will run after runing container --entrypoint)
       # commanfor tagged container and command to run
-      - name: Run docker container
+      - name: Run tests
         run: docker run -i --name playwright_test --entrypoint="npx" playwright_image playwright test --shard ${{matrix.shard}}
       # Copy playwright-report
       - name: Copy test results playwright-report
