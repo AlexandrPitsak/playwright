@@ -1,55 +1,128 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page, BrowserContext } from '@playwright/test';
+import { UserData } from '../types/userType.ts';
+import { isProd, urls } from '../data/url';
+import { TEST_USER_2 } from '../data/user.ts';
+import { AccountsGooglePage } from '../pages/google/AccountsPage.ts';
+import { navigateToConnectorPage } from '../helpers/navigate.ts';
+import { datasources } from '../data/datasource.ts';
+import { ConnectorPage } from '../pages/ConnectorPage.ts';
+import { Datasource } from '../types/datasourceType.ts';
 
-test('has title', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
 
-  // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Playwright/);
-});
 
-test('get started link', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
+export async function revokeAccess({datasource,page,} : {datasource: Datasource; page: Page;}) {
+  const isProduction = isProd();
+  const title = datasource.title;
+  const cardText = `${title} By Supermetrics #1`;
+  const removalText = `${title} was removed`;
+  const removeDialog = page.locator('.apps-script-remove-dialog');
 
-  // Click the get started link.
-  await page.getByRole('link', { name: 'Get started' }).click();
+  await page.goto('/u/0/datasources/create/');
+  await page.locator('.search-bar-container input').fill(title);
+  await page
+      .locator('.mdc-card')
+      .filter({
+          has: page.locator('.card-content .title-text'),
+          hasText: isProduction ? cardText : `LOCAL: ${cardText}`,
+      })
+      .locator('.card-actions')
+      .locator('.more-menu-button')
+      .click();
 
-  // Expects page to have a heading with the name of Installation.
-  await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
-});
 
-test('get started link2', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
+  await page
+      .locator('.mat-mdc-menu-item-text', { hasText: 'Revoke access' })
+      .click();
+  await removeDialog.locator('.md-raised', { hasText: 'Remove' }).click();
 
-  // Click the get started link.
-  await page.getByRole('link', { name: 'Get started' }).click();
+  if (isProduction) {
+      await removeDialog
+          .locator('.md-raised', { hasText: 'Remove anyway' })
+          .click();
+  }
+  await page.locator('.md-toast-content', { hasText: removalText }).waitFor();
+}
 
-  // Expects page to have a heading with the name of Installation.
-  await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
-});
-test('get started link3', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
+const user = TEST_USER_2
 
-  // Click the get started link.
-  await page.getByRole('link', { name: 'Get started' }).click();
+for (const datasource of datasources) {
 
-  // Expects page to have a heading with the name of Installation.
-  await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
-});
-test('get started link4', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
+   async function authorizeToGoogleAccount({user, page}: {user: UserData; page: Page;}) {
+        await page.goto(urls.googleAccounts);
+        const accountsGoogle = new AccountsGooglePage(page);
+        await accountsGoogle.googleLogin(user);
+  }
 
-  // Click the get started link.
-  await page.getByRole('link', { name: 'Get started' }).click();
+  test.describe.serial('Given user authorize to Google account', async () => {
+            let browserContext: BrowserContext,
+                page: Page,
+                newPage: Page,
+                connectorPage: ConnectorPage,
+                accountsGooglePage: AccountsGooglePage;
 
-  // Expects page to have a heading with the name of Installation.
-  await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
-});
-test('get started link5', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
+            test.beforeAll(async ({ browser }) => {
+                browserContext = await browser.newContext();
+                page = await browserContext.newPage();
+                
+                await authorizeToGoogleAccount({ user, page });
+            });
 
-  // Click the get started link.
-  await page.getByRole('link', { name: 'Get started' }).click();
+            test.afterAll(async () => {
+              await revokeAccess({ datasource, page });
+              await browserContext.close();
+          });
 
-  // Expects page to have a heading with the name of Installation.
-  await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
-});
+              test.describe('Given user authorize to Google accounteee', async () => {
+                    test.beforeAll(async () => {
+                      await navigateToConnectorPage(datasource, page);
+
+                      connectorPage = new ConnectorPage(page);
+                    });
+                  
+                    test(`Check title for ${datasource.title}`, async function () {
+                      await expect(
+                          connectorPage.connectorTitle(datasource.title),
+                          'Connector title is not as expected'
+                      ).toBeVisible();
+                    });
+                    test(`Check button for ${datasource.title}`, async function () {
+                      await expect(
+                          connectorPage.authorizationForm.lsAuthorizeButton,
+                          'Looker studio auth button is not displayed'
+                      ).toBeVisible();
+                    });
+          
+                    test(`Check button is disabled for ${datasource.title}`, async function () {
+                        await expect(
+                            connectorPage.authorizationForm.lsAuthorizeButton,
+                            'Looker studio auth button is not enabled'
+                        ).toBeEnabled();
+                    });
+
+
+                    test.describe('WHEN user authorize to LS', async () => {
+                      test.beforeAll(async () => {
+                          newPage = await connectorPage.authorizationForm.clickAuthorizeLookerStudioButton();
+                          accountsGooglePage = new AccountsGooglePage(newPage);
+          
+                          await accountsGooglePage.authorizeLookerStudio();
+                      });
+          
+                      test(`THEN authorize to Connector button is displayed for ${datasource.title}`, async function () {
+                          await expect(
+                              connectorPage.authorizationForm.connectorAuthorizeButton(datasource),
+                              'Looker studio auth button is not displayed'
+                          ).toBeVisible();
+                      });
+                
+      
+      
+      
+      
+                });      
+                
+              });  
+  });
+
+
+}
