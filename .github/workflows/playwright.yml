@@ -100,4 +100,4 @@ jobs:
           destination_dir: ${{ steps.timestampid.outputs.timestamp}}
 
       - name: Write a url summary
-        run: echo "### Test results link (wait 20 sec) https://${{github.repository_owner}}.github.io/"
+        run: echo "### Test results link (wait 20 sec) https://${{github.repository_owner}}.github.io/somewhere"
