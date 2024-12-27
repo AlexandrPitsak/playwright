@@ -1,12 +1,12 @@
 import { test, expect, Page, BrowserContext } from '@playwright/test';
-import { UserData } from '../types/userType.ts';
+import { UserData } from '../types/userType';
 import { isProd, urls } from '../data/url';
-import { TEST_USER_2 } from '../data/user.ts';
-import { AccountsGooglePage } from '../pages/google/AccountsPage.ts';
-import { navigateToConnectorPage } from '../helpers/navigate.ts';
-import { datasources } from '../data/datasource.ts';
-import { ConnectorPage } from '../pages/ConnectorPage.ts';
-import { Datasource } from '../types/datasourceType.ts';
+import { TEST_USER_2 } from '../data/user';
+import { AccountsGooglePage } from '../pages/google/AccountsPage';
+import { navigateToConnectorPage } from '../helpers/navigate';
+import { datasources } from '../data/datasource';
+import { ConnectorPage } from '../pages/ConnectorPage';
+import { Datasource } from '../types/datasourceType';
 
 
 
@@ -47,7 +47,8 @@ const user = TEST_USER_2
 
 for (const datasource of datasources) {
 
-   async function authorizeToGoogleAccount({user, page}: {user: UserData; page: Page;}) {
+   // @ts-ignore
+    async function authorizeToGoogleAccount({user, page}: {user: UserData; page: Page;}) {
         await page.goto(urls.googleAccounts);
         const accountsGoogle = new AccountsGooglePage(page);
         await accountsGoogle.googleLogin(user);

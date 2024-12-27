@@ -1,4 +1,4 @@
-import { UserData } from "../types/userType.ts";
+import { UserData } from "../types/userType";
 
 export const TEST_USER_2: UserData = {
     email: 'bot@supermetrics.team',
